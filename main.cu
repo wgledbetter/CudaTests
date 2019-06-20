@@ -5,7 +5,7 @@ __global__ void mykernel(void) {
 }
 
 __global__ void add(int *a, int *b, int *c){
-    c[blockIdx.x] = a[blockIdx.x] + b[blockIdx.x];
+    c[threadIdx.x] = a[threadIdx.x] + b[threadIdx.x];
 }
 
 #define N 512
@@ -26,15 +26,15 @@ int main(void){
     a = (int *)malloc(size);
     b = (int *)malloc(size);
     c = (int *)malloc(size);
-    // std::random_ints(a, N);
-    // std::random_ints(b, N);
+    a[23] = 33;
+    b[23] = -30;
 
     // Copy from host to device
     cudaMemcpy(x, a, size, cudaMemcpyHostToDevice);
     cudaMemcpy(y, b, size, cudaMemcpyHostToDevice);
 
     // Run the 'add' kernel
-    add<<<N,1>>>(x, y, z);
+    add<<<1,N>>>(x, y, z);
 
     // Copy answer from device to host
     cudaMemcpy(c, z, size, cudaMemcpyDeviceToHost);
