@@ -5,10 +5,12 @@ __global__ void mykernel(void) {
 }
 
 __global__ void add(double *a, double *b, double *c){
-    c[threadIdx.x] = a[threadIdx.x] + b[threadIdx.x];
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    c[idx] = a[idx] + b[idx];
 }
 
-#define N 512
+#define N 2560
+#define THREADS_PER_BLOCK 512
 
 int main(void){
     mykernel<<<1,1>>>();
@@ -34,7 +36,7 @@ int main(void){
     cudaMemcpy(y, b, size, cudaMemcpyHostToDevice);
 
     // Run the 'add' kernel
-    add<<<1,N>>>(x, y, z);
+    add<<<N/THREADS_PER_BLOCK, THREADS_PER_BLOCK>>>(x, y, z);
 
     // Copy answer from device to host
     cudaMemcpy(c, z, size, cudaMemcpyDeviceToHost);
