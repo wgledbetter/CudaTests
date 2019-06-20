@@ -1,7 +1,7 @@
 #!/bin/sh
 
 COMPILER=nvcc
-FLAGS=""
+FLAGS="-arch=sm_61"
 INCLUDE=""
 LIBS=""
 

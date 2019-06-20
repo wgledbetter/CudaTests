@@ -4,7 +4,7 @@ __global__ void mykernel(void) {
 
 }
 
-__global__ void add(int *a, int *b, int *c){
+__global__ void add(double *a, double *b, double *c){
     c[threadIdx.x] = a[threadIdx.x] + b[threadIdx.x];
 }
 
@@ -14,20 +14,20 @@ int main(void){
     mykernel<<<1,1>>>();
     std::cout << "wow" << std::endl;
 
-    int *a, *b, *c;  // Host variables
-    int *x, *y, *z;  // Device variables
-    int size = N * sizeof(int);
+    double *a, *b, *c;  // Host variables
+    double *x, *y, *z;  // Device variables
+    int size = N * sizeof(double);
 
     cudaMalloc((void **)&x, size);
     cudaMalloc((void **)&y, size);
     cudaMalloc((void **)&z, size);
 
     // Set Input
-    a = (int *)malloc(size);
-    b = (int *)malloc(size);
-    c = (int *)malloc(size);
-    a[23] = 33;
-    b[23] = -30;
+    a = (double *)malloc(size);
+    b = (double *)malloc(size);
+    c = (double *)malloc(size);
+    a[23] = 33.249;
+    b[23] = -30.741;
 
     // Copy from host to device
     cudaMemcpy(x, a, size, cudaMemcpyHostToDevice);
