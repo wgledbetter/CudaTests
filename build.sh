@@ -2,7 +2,8 @@
 
 COMPILER=nvcc
 FLAGS="-arch=sm_61"
+GCC_OPTS="--compiler-options -O3,-Wall"
 INCLUDE=""
 LIBS=""
 
-$COMPILER $FLAGS $INCLUDE $LIBS ./main.cu -o ./build/a.out
+$COMPILER $GCC_OPTS $FLAGS $INCLUDE $LIBS ./main.cu -o ./build/a.out

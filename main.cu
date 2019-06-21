@@ -5,9 +5,23 @@
 #define BLOCK_SIZE (N/M)
 #define RADIUS 5
 
-__global__ void mykernel(void) {
+struct MyStruct {
+    __device__ __host__ MyStruct(int a, double b){
+        x = a;
+        y = b;
+    }
 
-}
+    __device__ __host__ ~MyStruct(){
+
+    }
+
+    __device__ __host__ double get_sum(){
+        return x + y;
+    }
+
+    int x;
+    double y;
+};
 
 __global__ void add(double *a, double *b, double *c, int n){
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -16,41 +30,16 @@ __global__ void add(double *a, double *b, double *c, int n){
     }
 }
 
-__global__ void stencil_1D(int *in, int *out){
-    // This is similar to a convolution in the neural network sense
-
-    __shared__ int temp[BLOCK_SIZE + 2*RADIUS];  // Memory that is shared across threads within a block
-    int gindex = threadIdx.x + blockIdx.x * blockDim.x;  // Global index (in)
-    int lindex = threadIdx.x + RADIUS;  // Local index (temp)
-
-    // Read inputs into shared memory
-    temp[lindex] = in[gindex];
-    if(threadIdx.x < RADIUS){
-        temp[lindex - RADIUS] = in[gindex - RADIUS];
-        temp[lindex + BLOCK_SIZE] = in[gindex + BLOCK_SIZE];
-    }
-
-    // Synchronize (ensure all threads have run above code before any proceed to following)
-        // Necessary for filling temp
-    __syncthreads();
-
-    // Apply stencil
-    int result = 0;
-    for(int offset = -RADIUS; offset <= RADIUS; offset++){
-        result += temp[lindex + offset];
-    }
-
-    // Store
-    out[gindex] = result;
+__global__ void cudaStructs(MyStruct *ms, double *ans){
+    *ans = ms->get_sum();
 }
 
 int main(void){
-    mykernel<<<1,1>>>();
     std::cout << "wow" << std::endl;
 
     double *a, *b, *c;  // Host variables
     double *x, *y, *z;  // Device variables
-    int size = N * sizeof(double);
+    const size_t size = size_t(N) * sizeof(double);
 
     cudaMalloc((void **)&x, size);
     cudaMalloc((void **)&y, size);
@@ -83,8 +72,38 @@ int main(void){
     free(b);
     free(c);
 
-
     std::cout << "Answer: " << c[23] << std::endl;
+
+    //==============================================================
+
+    MyStruct *devStruct;
+    double hostAns;
+    double *devAns;
+    const size_t structSize = sizeof(MyStruct);
+    const size_t ansSize = sizeof(double);
+
+    cudaMalloc((void **)&devStruct, structSize);
+    cudaMalloc((void **)&devAns, ansSize);
+
+    // Set values
+    MyStruct hostStruct(9, 3.14);
+    std::cout << "Class member function on host: " << hostStruct.get_sum() << std::endl;
+
+    // Copy struct to device
+    cudaMemcpy(devStruct, &hostStruct, structSize, cudaMemcpyHostToDevice);
+    
+    // Run the kernel
+    cudaStructs<<< 1, 1 >>>(devStruct, devAns);
+
+    // Get answer back to host
+    cudaMemcpy(&hostAns, devAns, ansSize, cudaMemcpyDeviceToHost);
+
+    // Clean Device
+    cudaFree(devStruct);
+    cudaFree(devAns);
+
+    // Answer
+    std::cout << "Class member function on device: " << hostAns << std::endl;
 
     return 12;
 }
