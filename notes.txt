@@ -5,3 +5,14 @@ Because ultimately, I'd like to be able to take my pre-existing astrodynamics co
 
 Actually, that might be unreasonable because the code actually needs to be written differently in order to take advantage of what CUDA actually does with blocks and threads.
 I should write something in pure CUDA before I try to bridge to C++.
+
+
+22 Jun
+Next, try doing a policy-based design.
+template<class P>
+MyClass{
+
+};
+
+MyClass<CudaMode> mc;
+MyClass<CPUMode> mcc;
