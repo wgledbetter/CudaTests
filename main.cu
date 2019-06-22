@@ -1,7 +1,8 @@
 #include <iostream>
 #include <stdio.h>
 
-#include "MyClass.cuh"
+// #include "MyClass.h"
+#include "MyCudaClass.cu"
 
 #define N 2560
 #define M 512
@@ -116,9 +117,12 @@ int main(void){
 
     MyClass mc;
     mc.set_param(12.5);
-    std::cout << "Calling Host member: " << mc.do_it_on_host() << std::endl;
-    std::cout << "Calling Device member: " << mc.do_it_on_device() << std::endl;
+    std::cout << "Calling Host class, Host member: " << mc.do_it_on_host() << std::endl;
 
+    MyCudaClass mcc;
+    mcc.set_param(12.5);
+    std::cout << "Calling Cuda class, Host member: " << mcc.do_it_on_host() << std::endl;
+    std::cout << "Calling Cuda class, Device member: " << mcc.do_it_on_device() << std::endl;
 
 
     return 12;
