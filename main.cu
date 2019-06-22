@@ -29,47 +29,52 @@ struct MyStruct {
 };
 
 class MyClass {
-    double hostParam;
-    double *devParam;
-    const size_t dubSize = sizeof(double);
+    public:
+        double hostParam;
+        double *devParam;
+        const size_t dubSize = sizeof(double);
 
-    int nCudaBlocks = 1;
-    int nCudaThreadsPerBlock = 1;
+        int nCudaBlocks = 1;
+        int nCudaThreadsPerBlock = 1;
 
-    MyClass(){
-        cudaMalloc((void **)&devParam, dubSize);
-    }
+        MyClass(){
+            cudaMalloc((void **)&devParam, dubSize);
+        }
 
-    void set_param(double in){
-        hostParam = in;
-        cudaMemcpy(devParam, &hostParam, dubSize, cudaMemcpyHostToDevice);
-    }
+        ~MyClass(){
+            cudaFree(devParam);
+        }
 
-    double do_it_on_host(){
-        double out;
-        hostKernel(&hostParam, &out);
-        return out;
-    }
+        void set_param(double in){
+            hostParam = in;
+            cudaMemcpy(devParam, &hostParam, dubSize, cudaMemcpyHostToDevice);
+        }
 
-    double do_it_on_device(){
-        double *devOut, out;
-        cudaMalloc((void **)&devOut, dubSize);
-        devKernel<<< nCudaBlocks, nCudaThreadsPerBlock >>>(devParam, devOut);
-        cudaMemcpy(&out, devOut, dubSize, cudaMemcpyDeviceToHost);
-        return out;
-    }
+        double do_it_on_host(){
+            double out;
+            hostKernel(&hostParam, &out);
+            return out;
+        }
 
-    __global__ static void devKernel(double *param, double *ans){
-        // Cuda implementation
-        std::printf("Inside devKernel: ");
-        *ans = *param + 3.14;
-    }
+        double do_it_on_device(){
+            double *devOut, out;
+            cudaMalloc((void **)&devOut, dubSize);
+            devKernel<<< nCudaBlocks, nCudaThreadsPerBlock >>>(devParam, devOut);
+            cudaMemcpy(&out, devOut, dubSize, cudaMemcpyDeviceToHost);
+            return out;
+        }
 
-    void hostKernel(double *param, double *ans){
-        // Host implementation
-        std::cout << "Inside hostKernel: " << "wow" << std::endl;
-        *ans = *param + 3.14;
-    }
+        __global__ static void devKernel(double *param, double *ans){
+            // Cuda implementation
+            std::printf("Inside devKernel: ");
+            *ans = *param + 3.14;
+        }
+
+        void hostKernel(double *param, double *ans){
+            // Host implementation
+            std::cout << "Inside hostKernel: " << "wow" << std::endl;
+            *ans = *param + 3.14;
+        }
 };
 
 __global__ void add(double *a, double *b, double *c, int n){
@@ -155,6 +160,11 @@ int main(void){
     std::cout << "Class member function on device: " << hostAns << std::endl;
 
     //===============================================================
+
+    MyClass mc;
+    mc.set_param(12.5);
+    std::cout << "Calling Host member: " << mc.do_it_on_host() << std::endl;
+    std::cout << "Calling Device member: " << mc.do_it_on_device() << std::endl;
 
 
 

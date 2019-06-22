@@ -7,7 +7,7 @@ CUDA_FLAGS="--cuda-gpu-arch=sm_61"
 INCLUDE="-isystem /home/wgledbetter/Install/LLVM/include/c++/v1/"
 LIBS="-L/opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/ -L/usr/local/cuda-10.1/lib64 -lcudart_static -ldl -lrt -lc++"
 
-CUDA_FNAME="clang_test.cu"
+CUDA_FNAME="main.cu"
 
 $COMPILER $OUTPUT_FLAGS $CPP_FLAGS $CUDA_FLAGS $INCLUDE $LIBS ./$CUDA_FNAME -o ./a.out
 
