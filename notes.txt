@@ -1,0 +1,7 @@
+21 Jun
+Just implemented passing classes to device.
+Next, I want to test extending a host-only class to a device class.
+Because ultimately, I'd like to be able to take my pre-existing astrodynamics code base and write some wrappers to run it on a GPU.
+
+Actually, that might be unreasonable because the code actually needs to be written differently in order to take advantage of what CUDA actually does with blocks and threads.
+I should write something in pure CUDA before I try to bridge to C++.

@@ -1,9 +1,14 @@
 #include <iostream>
+#include <stdio.h>
 
 #define N 2560
 #define M 512
 #define BLOCK_SIZE (N/M)
 #define RADIUS 5
+
+inline double hostSumFunction(int n, double m){
+    return n+m;
+}
 
 struct MyStruct {
     __device__ __host__ MyStruct(int a, double b){
@@ -16,11 +21,57 @@ struct MyStruct {
     }
 
     __device__ __host__ double get_sum(){
-        return x + y;
+        return hostSumFunction(x, y);
     }
 
     int x;
     double y;
+};
+
+class MyClass {
+    double hostParam;
+    double *devParam;
+    const size_t dubSize = sizeof(double);
+
+    int nCudaBlocks = 1;
+    int nCudaThreadsPerBlock = 1;
+
+    MyClass(){
+        cudaMalloc((void **)&devParam, dubSize);
+    }
+
+    void set_param(double in){
+        hostParam = in;
+        cudaMemcpy(devParam, &hostParam, dubSize, cudaMemcpyHostToDevice);
+    }
+
+    double do_it_on_host(){
+        double out;
+        hostKernel(&hostParam, &out);
+        return out;
+    }
+
+    double do_it_on_device(){
+        double *devOut, out;
+        cudaMalloc((void **)&devOut, dubSize);
+        devKernel<<< nCudaBlocks, nCudaThreadsPerBlock >>>(devParam, devOut);
+        cudaMemcpy(&out, devOut, dubSize, cudaMemcpyDeviceToHost);
+        return out;
+    }
+
+    __global__ static void devKernel(double *param, double *ans){
+        // Cuda implementation
+        printf("Inside devKernel: ");
+        printf(blockIdx.x);
+        printf('\n');
+        *ans = *param + 3.14;
+    }
+
+    void hostKernel(double *param, double *ans){
+        // Host implementation
+        std::cout << "Inside hostKernel: " << "wow" << std::endl;
+        *ans = *param + 3.14;
+    }
 };
 
 __global__ void add(double *a, double *b, double *c, int n){
@@ -104,6 +155,10 @@ int main(void){
 
     // Answer
     std::cout << "Class member function on device: " << hostAns << std::endl;
+
+    //===============================================================
+
+
 
     return 12;
 }
