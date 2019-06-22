@@ -6,7 +6,7 @@
 #define BLOCK_SIZE (N/M)
 #define RADIUS 5
 
-inline double hostSumFunction(int n, double m){
+__host__ __device__ double hostSumFunction(int n, double m){
     return n+m;
 }
 
@@ -61,9 +61,7 @@ class MyClass {
 
     __global__ static void devKernel(double *param, double *ans){
         // Cuda implementation
-        printf("Inside devKernel: ");
-        printf(blockIdx.x);
-        printf('\n');
+        std::printf("Inside devKernel: ");
         *ans = *param + 3.14;
     }
 
